@@ -1,0 +1,43 @@
+FROM python:3.11-slim as builder
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd -r fastapi && useradd -r -g fastapi fastapi
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+RUN groupadd -r fastapi && useradd -r -g fastapi fastapi
+
+RUN mkdir -p /app/uploads /app/logs /app/data \
+    && chown -R fastapi:fastapi /app
+
+COPY --from=builder /root/.local /home/fastapi/.local
+COPY --chown=fastapi:fastapi ./app /app
+COPY --chown=fastapi:fastapi alembic.ini /app/
+COPY --chown=fastapi:fastapi scripts/ /app/scripts/
+
+RUN chmod +x /app/scripts/*.sh
+
+WORKDIR /app
+
+ENV PATH=/home/fastapi/.local/bin:$PATH
+
+USER fastapi
+
+EXPOSE 8000
+
+ENTRYPOINT ["/app/scripts/entrypoint.sh"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
