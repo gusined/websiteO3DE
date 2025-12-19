@@ -1,0 +1,21 @@
+src/
+├── components/
+│   ├── Header.js
+│   ├── Footer.js
+│   ├── ProductCard.js
+│   └── ProtectedRoute.js
+├── pages/
+│   ├── Home.js
+│   ├── Products.js
+│   ├── TrialDownload.js
+│   ├── Store.js
+│   ├── PrivateDownloads.js
+│   ├── Auth.js
+│   └── ProductDetails.js
+├── styles/
+│   ├── App.css
+│   └── components.css
+├── utils/
+│   └── auth.js
+└── data/
+    └── products.js
